@@ -1550,8 +1550,8 @@ class Handler(object):
 
     def create_package(self, name, command, display_name='', file_urls=[],
                        command_timeout_seconds=600, expire_seconds=600, parameters_json_file='',
-                       verify_filters=[], verify_filter_options=[], verify_expire_seconds=600,
-                       **kwargs):
+                       parameters_json='', verify_filters=[], verify_filter_options=[],
+                       verify_expire_seconds=600, **kwargs):
         """Create a package object.
 
         Parameters
@@ -1575,6 +1575,9 @@ class Handler(object):
         parameters_json_file : str, optional
             * default: ''
             * path to json file describing parameters for package
+        parameters_json : str, optional
+            * default: ''
+            * json string describing parameters for package
         expire_seconds : int, optional
             * default: 600
             * timeout for action expiry in seconds
@@ -1650,14 +1653,20 @@ class Handler(object):
             add_package_obj.verify_expire_seconds = verify_expire_seconds
 
         # PARAMETERS
-        if parameters_json_file:
+        if parameters_json_file:    # From JSON File
             add_package_obj.parameter_definition = pytan.utils.load_param_json_file(
                 parameters_json_file=parameters_json_file
             )
+        elif parameters_json:  # From JSON formatted string
+            try:
+                json_obj = json.loads( json.dumps(parameters_json) )
+                add_package_obj.parameter_definition = parameters_json
+            except ValueError, e:
+                self.mylog.debug( 'Ignoring Parameter Definition JSON. Invalid Formatted JSON.' )
 
         # FILES
+        filelist_obj = taniumpy.PackageFileList()
         if file_urls:
-            filelist_obj = taniumpy.PackageFileList()
             for file_url in file_urls:
                 # if :: is in file_url, split on it and use 0 as
                 # download_seconds
@@ -1676,7 +1685,8 @@ class Handler(object):
                 file_obj.source = file_url
                 file_obj.download_seconds = download_seconds
                 filelist_obj.append(file_obj)
-            add_package_obj.files = filelist_obj
+
+        add_package_obj.files = filelist_obj
 
         h = "Issue an AddObject to add a Group object for this package"
         package_obj = self._add(obj=add_package_obj, pytan_help=h, **clean_kwargs)
