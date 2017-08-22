@@ -307,6 +307,30 @@ def setup_console_logging(gmt_tz=True):
         v.addHandler(ch)
 
 
+def setup_file_logging(gmt_tz=True, logfilepath='pytan.log'):
+    """Creates a file logging handler using logging.StreamHandler()"""
+    fh_name = 'file'
+    remove_logging_handler('file')
+
+    if gmt_tz:
+        # change the default time zone to GM time
+        logging.Formatter.converter = time.gmtime
+    else:
+        logging.Formatter.converter = time.localtime
+
+    # add a file handler to all loggers that goes to STDOUT for INFO
+    # and below, but STDERR for WARNING and above (old method)
+
+    fh = logging.FileHandler(logfilepath)
+    fh.set_name(fh_name)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter(pytan.constants.INFO_FORMAT))
+
+    for k, v in sorted(get_all_pytan_loggers().iteritems()):
+        spew("setup_file_logging(): add handler: {0}/{0.name} to logger {1}".format(fh, k))
+        v.addHandler(fh)
+
+
 def change_console_format(debug=False):
     """Changes the logging format for console handler to :data:`pytan.constants.DEBUG_FORMAT` or :data:`pytan.constants.INFO_FORMAT`
 

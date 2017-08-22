@@ -166,6 +166,10 @@ class Handler(object):
         # setup the console logging handler
         pytan.utils.setup_console_logging(gmt_tz=self.gmt_log)
 
+        # setup the file logging handler
+        if 'logfile' in kwargs:
+            pytan.utils.setup_file_logging(gmt_tz=self.gmt_log, logfilepath=kwargs['logfile'] )
+
         # create all the loggers and set their levels based on loglevel
         pytan.utils.set_log_levels(loglevel=self.loglevel)
 
