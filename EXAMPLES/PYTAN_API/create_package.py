@@ -69,10 +69,11 @@ kwargs = {}
 kwargs["expire_seconds"] = 1500
 kwargs["display_name"] = u'package49 API test'
 kwargs["name"] = u'package49'
-kwargs["parameters_json_file"] = u'../doc/example_of_all_package_parameters.json'
+kwargs["parameters_json_file"] = u'../../doc/example_of_all_package_parameters.json'
 kwargs["verify_expire_seconds"] = 3600
 kwargs["command"] = u'package49 $1 $2 $3 $4 $5 $6 $7 $8'
 kwargs["file_urls"] = [u'3600::testing.vbs||https://content.tanium.com/files/initialcontent/bundles/2014-10-01_11-32-15-7844/custom_tagging_-_remove_tags_[non-windows]/CustomTagRemove.sh']
+kwargs["local_files"] = [u'null_file.nil||0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef||77']
 kwargs["verify_filter_options"] = [u'and']
 kwargs["verify_filters"] = [u'Custom Tags, that contains:tag']
 kwargs["command_timeout_seconds"] = 9999
@@ -127,20 +128,20 @@ PackageSpec, name: 'package49', id: 95
 ...CALLING: handler.export_obj() with args {'export_format': 'json', 'obj': <taniumpy.object_types.package_spec.PackageSpec object at 0x102be8f90>}
 ...OUTPUT: print the objects returned in JSON format:
 {
-  "_type": "package_spec", 
-  "available_time": "1900-01-01T00:00:00", 
-  "command": "package49 $1 $2 $3 $4 $5 $6 $7 $8", 
-  "command_timeout": 9999, 
-  "creation_time": "2015-09-14T19:57:31", 
-  "deleted_flag": 0, 
-  "display_name": "package49 API test", 
-  "expire_seconds": 1500, 
+  "_type": "package_spec",
+  "available_time": "1900-01-01T00:00:00",
+  "command": "package49 $1 $2 $3 $4 $5 $6 $7 $8",
+  "command_timeout": 9999,
+  "creation_time": "2015-09-14T19:57:31",
+  "deleted_flag": 0,
+  "display_name": "package49 API test",
+  "expire_seconds": 1500,
   "files": {
-    "_type": "package_files", 
+    "_type": "package_files",
     "file": [
       {
-        "_type": "file", 
-        "bytes_downloaded": 0, 
+        "_type": "file",
+        "bytes_downloaded": 0,
 ..trimmed for brevity..
 ...CALLING: handler.delete() with args: {'objtype': u'package', 'name': u'package49'}
 ...OUTPUT: print the delete response

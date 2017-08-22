@@ -1548,10 +1548,9 @@ class Handler(object):
         )
         raise pytan.exceptions.HandlerError(m)
 
-    def create_package(self, name, command, display_name='', file_urls=[],
+    def create_package(self, name, command, display_name='', file_urls=[], local_files=[],
                        command_timeout_seconds=600, expire_seconds=600, parameters_json_file='',
-                       verify_filters=[], verify_filter_options=[], verify_expire_seconds=600,
-                       **kwargs):
+                       verify_filters=[], verify_filter_options=[], verify_expire_seconds=600, **kwargs):
         """Create a package object.
 
         Parameters
@@ -1569,6 +1568,10 @@ class Handler(object):
             * can optionally define file name by using FILENAME||URL
             * can combine optionals by using SECONDS::FILENAME||URL
             * FILENAME will be extracted from basename of URL if not provided
+        local_files : list of strings, optional
+            * default: []
+            * FILENAME, HASH and SIZE of local file to add to package
+            * define all values by using FILENAME||HASH||FILESIZE
         command_timeout_seconds : int, optional
             * default: 600
             * timeout for command execution in seconds
@@ -1650,14 +1653,15 @@ class Handler(object):
             add_package_obj.verify_expire_seconds = verify_expire_seconds
 
         # PARAMETERS
-        if parameters_json_file:
+        if parameters_json_file:    # From JSON File
             add_package_obj.parameter_definition = pytan.utils.load_param_json_file(
                 parameters_json_file=parameters_json_file
             )
 
         # FILES
+        # remote files
+        filelist_obj = taniumpy.PackageFileList()
         if file_urls:
-            filelist_obj = taniumpy.PackageFileList()
             for file_url in file_urls:
                 # if :: is in file_url, split on it and use 0 as
                 # download_seconds
@@ -1676,7 +1680,21 @@ class Handler(object):
                 file_obj.source = file_url
                 file_obj.download_seconds = download_seconds
                 filelist_obj.append(file_obj)
-            add_package_obj.files = filelist_obj
+        # local files
+        if local_files:
+            for local_file in local_files:
+                try:
+                    file_name, file_hash, file_size = local_file.split('||')
+                    file_obj = taniumpy.PackageFile()
+                    file_obj.name = file_name
+                    file_obj.hash = file_hash
+                    file_obj.size = file_size
+                    file_obj.source = ''
+                    file_obj.download_seconds = 0
+                    filelist_obj.append(file_obj)
+                except ValueError, e:
+                    self.mylog.warning( 'error splitting string' )
+        add_package_obj.files = filelist_obj
 
         h = "Issue an AddObject to add a Group object for this package"
         package_obj = self._add(obj=add_package_obj, pytan_help=h, **clean_kwargs)
