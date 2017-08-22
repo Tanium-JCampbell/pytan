@@ -526,6 +526,36 @@ class Session(object):
         obj = taniumpy.BaseType.fromSOAPBody(body=response_body)
         return obj
 
+    #--- upload ----------------------------------------------------------
+    #   Originated as a copy of add() and modified to provide upload
+    #   functionality.
+    #
+    #   Changes from add()
+    #   - Calls _create_upload_object_body instead of
+    #     _create_add_object_body
+    #---------------------------------------------------------------------
+    def upload(self, obj, **kwargs):
+        """Create and send a UploadFile XML Request body from `obj` and parses the response into an appropriate :mod:`taniumpy` object.
+
+        Parameters
+        ----------
+        obj : :class:`taniumpy.object_types.base.BaseType`
+            * object to add
+
+        Returns
+        -------
+        obj : :class:`taniumpy.object_types.base.BaseType`
+            * uploaded object
+        """
+        clean_keys = ['obj', 'request_body']
+        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+
+        request_body = self._create_upload_object_body(obj=obj, **clean_kwargs)
+        response_body = self._get_response(request_body=request_body, **clean_kwargs)
+        obj = taniumpy.BaseType.fromSOAPBody(body=response_body)
+        return obj
+    #---------------------------------------------------------------------
+
     def delete(self, obj, **kwargs):
         """Create and send a DeleteObject XML Request body from `obj` and parses the response into an appropriate :mod:`taniumpy` object.
 
@@ -1550,6 +1580,36 @@ class Session(object):
 
         object_list = obj.toSOAPBody(minimal=True)
         cmd = 'AddObject'
+        obj_body = self._build_body(command=cmd, object_list=object_list, **clean_kwargs)
+        return obj_body
+
+    #--- _create_upload_object_body --------------------------------------
+    #   Originated as a copy of _create_add_object_body() and modified to
+    #   provide upload functionality.
+    #
+    #   Changes from _create_add_object_body()
+    #   - Uses UploadFile command instead of AddObject command
+    #---------------------------------------------------------------------
+    def _create_upload_object_body(self, obj, **kwargs):
+        """Utility method for building an XML Request Body to upload a file.
+
+        Parameters
+        ----------
+        obj : :class:`taniumpy.object_types.base.BaseType`
+            * object to convert into XML
+        kwargs : dict, optional
+            * any number of attributes that can be set via :class:`taniumpy.object_types.options.Options` that control the servers response.
+
+        Returns
+        -------
+        obj_body : str
+            * The XML request body created from :func:`pytan.sessions.Session._build_body`
+        """
+        clean_keys = ['command', 'object_list']
+        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+
+        object_list = obj.toSOAPBody(minimal=True)
+        cmd = 'UploadFile'
         obj_body = self._build_body(command=cmd, object_list=object_list, **clean_kwargs)
         return obj_body
 

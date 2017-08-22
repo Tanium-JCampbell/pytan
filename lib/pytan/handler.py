@@ -2325,6 +2325,60 @@ class Handler(object):
         self.mylog.debug("Added object {}".format(added_obj))
         return added_obj
 
+    #--- _upload ------------------------------------------------------------
+    #   Originated as a copy of _add() and modified to provide upload
+    #   functionality.
+    #
+    #   Changes from _add()
+    #   - logging language (mostly just replacing "add" with "upload")
+    #   - Removed check for recently added object
+    #   - Calls session.upload instead of session.add
+    #------------------------------------------------------------------------
+    def _upload(self, obj, **kwargs):
+        """Wrapper for interfacing with :func:`taniumpy.session.Session.upload`.
+
+        Parameters
+        ----------
+        obj : :class:`taniumpy.object_types.base.BaseType`
+            * object to add
+
+        Returns
+        -------
+        uploaded_obj : :class:`taniumpy.object_types.base.BaseType`
+           * full object that was added
+
+        Notes
+        -------
+
+            * Callback Support:
+                * PreAddObject
+        """
+        try:
+            search_str = '; '.join([str(x) for x in obj])
+        except Exception:
+            search_str = obj
+
+        self.mylog.debug("Uploading object {}".format(search_str))
+
+        kwargs['suppress_object_list'] = kwargs.get('suppress_object_list', 1)
+
+        clean_keys = ['obj', 'objtype', 'obj_map']
+        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+
+        h = "Issue an UploadFile to upload a file"
+        clean_kwargs['pytan_help'] = clean_kwargs.get('pytan_help', h)
+
+        obj = self.handle_cb(obj=obj, cb="PreAddObject", kwargs=kwargs)
+
+        try:
+            uploaded_obj = self.session.upload(obj=obj, **clean_kwargs)
+        except Exception as e:
+            err = "Error while trying to upload file '{}': {}!!".format
+            raise pytan.exceptions.HandlerError(err(search_str, e))
+
+        return uploaded_obj
+    #------------------------------------------------------------------------
+
     def _find(self, obj, **kwargs):
         """Wrapper for interfacing with :func:`taniumpy.session.Session.find`.
 
